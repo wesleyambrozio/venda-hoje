@@ -13,3 +13,10 @@
 *.log
 Thumbs.db
 .DS_Store
+.env
+vendor/
+storage/logs/*
+storage/cache/*
+storage/sessions/*
+.gitkeep
+

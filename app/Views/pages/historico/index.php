@@ -60,7 +60,7 @@
                     <td><?= formatDateTime($h['data_atendimento']) ?></td>
                     <td><a href="<?= url('/leads/' . $h['lead_id']) ?>"><?= e($h['lead_nome']) ?></a></td>
                     <td><?= ucfirst(e($h['canal'])) ?></td>
-                    <td><span class="badge badge-<?= $h['resultado'] === 'follow_up' ? 'warning' : 'success' ?>"><?= e($h['resultado']) ?></span></td>
+                    <td><span class="badge badge-<?= atendimentoResultadoBadge($h['resultado'], (bool) $h['encerrado']) ?>"><?= e(atendimentoResultadoLabel($h['resultado'], (bool) $h['encerrado'])) ?></span></td>
                     <td><?= funilLabel($h['etapa_funil']) ?></td>
                     <td><?= e(mb_substr($h['resumo'] ?? '-', 0, 60)) ?></td>
                     <td><?= e($h['usuario_nome']) ?></td>

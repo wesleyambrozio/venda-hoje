@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS funil_etapas_config (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT UNSIGNED NOT NULL,
+    etapa_chave VARCHAR(50) NOT NULL,
+    rotulo VARCHAR(100) NOT NULL,
+    ordem INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_empresa_etapa (empresa_id, etapa_chave),
+    FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

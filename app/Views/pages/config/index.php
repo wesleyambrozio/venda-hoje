@@ -11,6 +11,14 @@
         <div class="stat-value">📊</div>
         <div class="stat-label">Critérios Diagnóstico</div>
     </a>
+    <a href="<?= url('/config/funil') ?>" class="stat-card" style="text-decoration:none; color:inherit;">
+        <div class="stat-value">⚙️</div>
+        <div class="stat-label">Configurar Funil</div>
+    </a>
+    <a href="<?= url('/config/aparencia') ?>" class="stat-card" style="text-decoration:none; color:inherit;">
+        <div class="stat-value">🎨</div>
+        <div class="stat-label">Aparência (tema/paleta)</div>
+    </a>
 </div>
 
 <div class="card">

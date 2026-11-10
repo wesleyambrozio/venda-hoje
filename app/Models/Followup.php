@@ -39,6 +39,17 @@ class Followup extends Model
         return $this->query($sql, $params);
     }
 
+    public function findForEmpresa(int $id, int $empresaId): ?array
+    {
+        return $this->queryOne(
+            "SELECT f.* FROM followups f
+             JOIN leads l ON l.id = f.lead_id
+             WHERE f.id = ? AND l.empresa_id = ?
+             LIMIT 1",
+            [$id, $empresaId]
+        );
+    }
+
     public function getPendentesByAtendimento(int $atendimentoId): array
     {
         return $this->query(

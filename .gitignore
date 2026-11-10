@@ -20,3 +20,19 @@ storage/cache/*
 storage/sessions/*
 .gitkeep
 
+# --- protecao de segredos (backup pre-formatacao 2026-11-10)
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+id_deploy*
+*.sql.gz
+*.dump
+*.csv

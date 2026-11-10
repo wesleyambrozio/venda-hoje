@@ -12,6 +12,27 @@
                         <option value="<?= $canal ?>"><?= ucfirst($canal) ?></option>
                     <?php endforeach; ?>
                 </select>
+                <?php
+                $mensagemWhatsapp = sprintf(
+                    'Olá, %s! Tudo bem? Aqui é %s. Estou entrando em contato para dar continuidade ao nosso atendimento.',
+                    $lead['nome'],
+                    $user['nome'] ?? 'da equipe Venda Hoje'
+                );
+                $whatsappBaseUrl = whatsappUrl($lead['telefone'] ?? null);
+                $whatsappUrl = $whatsappBaseUrl
+                    ? $whatsappBaseUrl . '?text=' . rawurlencode($mensagemWhatsapp)
+                    : null;
+                ?>
+                <?php if ($whatsappUrl): ?>
+                    <a href="<?= e($whatsappUrl) ?>" target="_blank" rel="noopener noreferrer"
+                       class="btn btn-success btn-sm mt-1" style="background:var(--success);color:#fff;"
+                       id="whatsapp-link"
+                       data-whatsapp-base-url="<?= e($whatsappBaseUrl) ?>"
+                       data-whatsapp-default-message="<?= e($mensagemWhatsapp) ?>">Abrir WhatsApp</a>
+                    <small class="text-muted" id="whatsapp-message-hint">Mensagem padrão selecionada.</small>
+                <?php else: ?>
+                    <small class="text-muted">Cadastre um telefone para abrir o WhatsApp.</small>
+                <?php endif; ?>
             </div>
             <div class="form-group">
                 <label class="form-label">Resultado *</label>
@@ -73,12 +94,15 @@
                 <?php foreach ($gatilhos as $g): ?>
                 <div class="gatilho-card">
                     <label style="cursor: pointer;">
-                        <input type="checkbox" name="gatilhos[]" value="<?= $g['id'] ?>">
+                        <input type="checkbox" name="gatilhos[]" value="<?= $g['id'] ?>"
+                               data-gatilho-checkbox
+                               data-gatilho-title="<?= e($g['titulo']) ?>"
+                               data-gatilho-text="<?= e($g['texto']) ?>">
                         <strong><?= e($g['titulo']) ?></strong>
                         <span class="badge badge-muted"><?= e($g['categoria']) ?></span>
                     </label>
                     <p class="mt-1"><?= e(mb_substr($g['texto'], 0, 120)) ?>...</p>
-                    <select name="gatilho_funcionou_<?= $g['id'] ?>" class="form-control mt-1" style="font-size: 0.8rem;">
+                    <select name="gatilho_funcionou_<?= $g['id'] ?>" class="form-control mt-1" style="font-size: 0.8rem;" disabled data-gatilho-resultado>
                         <option value="">Funcionou?</option>
                         <option value="1">Sim ✓</option>
                         <option value="0">Não ✗</option>

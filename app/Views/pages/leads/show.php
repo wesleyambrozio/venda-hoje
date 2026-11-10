@@ -1,13 +1,14 @@
 <?php
-$etapas = config('app.funil_etapas');
-$etapaAtual = array_search($lead['etapa_funil'], $etapas);
+$etapas = $etapasFunil ?? array_map(static fn ($chave) => ['chave' => $chave, 'rotulo' => funilLabel($chave)], config('app.funil_etapas'));
+$etapasChaves = array_column($etapas, 'chave');
+$etapaAtual = array_search($lead['etapa_funil'], $etapasChaves, true);
 ?>
 
 <div class="funil-bar">
     <?php foreach ($etapas as $i => $etapa): ?>
-        <?php if (in_array($etapa, ['fechado', 'perdido']) && $i > 6) continue; ?>
-        <div class="funil-step <?= $etapa === $lead['etapa_funil'] ? 'active' : ($i < $etapaAtual ? 'done' : '') ?>">
-            <?= funilLabel($etapa) ?>
+        <?php if (in_array($etapa['chave'], ['fechado', 'perdido'], true) && $i > 6) continue; ?>
+        <div class="funil-step <?= $etapa['chave'] === $lead['etapa_funil'] ? 'active' : ($i < $etapaAtual ? 'done' : '') ?>">
+            <?= e($etapa['rotulo']) ?>
         </div>
     <?php endforeach; ?>
 </div>
@@ -16,6 +17,17 @@ $etapaAtual = array_search($lead['etapa_funil'], $etapas);
     <div class="flex gap-1 flex-wrap">
         <a href="<?= url('/leads/' . $lead['id'] . '/editar') ?>" class="btn btn-outline btn-sm">Editar</a>
         <a href="<?= url('/leads/' . $lead['id'] . '/atendimento') ?>" class="btn btn-primary btn-sm">+ Atendimento</a>
+        <?php
+        $mensagemWhatsapp = sprintf(
+            'Olá, %s! Tudo bem? Aqui é %s. Estou entrando em contato para dar continuidade ao nosso atendimento.',
+            $lead['nome'],
+            $user['nome'] ?? 'da equipe Venda Hoje'
+        );
+        $whatsappUrl = whatsappUrl($lead['telefone'] ?? null, $mensagemWhatsapp);
+        ?>
+        <?php if ($whatsappUrl): ?>
+        <a href="<?= e($whatsappUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success" style="background:var(--success);color:#fff;">WhatsApp</a>
+        <?php endif; ?>
         <?php if (in_array($user['perfil'], ['closer', 'gestor', 'admin_saas'])): ?>
         <a href="<?= url('/leads/' . $lead['id'] . '/diagnostico') ?>" class="btn btn-secondary btn-sm">Diagnóstico</a>
         <?php endif; ?>
@@ -33,6 +45,16 @@ $etapaAtual = array_search($lead['etapa_funil'], $etapas);
         <p><strong>SDR:</strong> <?= e($lead['sdr_nome'] ?? '-') ?></p>
         <p><strong>Closer:</strong> <?= e($lead['closer_nome'] ?? '-') ?></p>
         <p><strong>Etapa:</strong> <span class="badge badge-primary"><?= funilLabel($lead['etapa_funil']) ?></span></p>
+        <?php if (!empty($lead['abordagem_tipo'])): ?>
+            <?php
+            $ops = $abordagemOpcoes ?? \App\Services\ThemeService::abordagemOpcoes();
+            $labelAb = $ops[$lead['abordagem_tipo']]['label'] ?? $lead['abordagem_tipo'];
+            ?>
+            <p><strong>Abordagem:</strong> <span class="badge badge-secondary"><?= e($labelAb) ?></span></p>
+            <?php if (!empty($lead['abordagem_texto'])): ?>
+                <p class="mt-1 text-muted"><?= e($lead['abordagem_texto']) ?></p>
+            <?php endif; ?>
+        <?php endif; ?>
         <?php if ($lead['observacoes']): ?>
         <p class="mt-1"><strong>Obs:</strong> <?= e($lead['observacoes']) ?></p>
         <?php endif; ?>
@@ -54,7 +76,7 @@ $etapaAtual = array_search($lead['etapa_funil'], $etapas);
                     <tr>
                         <td><?= formatDateTime($a['data_atendimento']) ?></td>
                         <td><?= e($a['canal']) ?></td>
-                        <td><span class="badge badge-<?= $a['resultado'] === 'follow_up' ? 'warning' : 'success' ?>"><?= e($a['resultado']) ?></span></td>
+                        <td><span class="badge badge-<?= atendimentoResultadoBadge($a['resultado'], (bool) $a['encerrado']) ?>"><?= e(atendimentoResultadoLabel($a['resultado'], (bool) $a['encerrado'])) ?></span></td>
                         <td><?= e(mb_substr($a['resumo'] ?? '', 0, 50)) ?></td>
                         <td><?= e($a['usuario_nome']) ?></td>
                     </tr>

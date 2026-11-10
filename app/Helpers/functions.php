@@ -129,6 +129,51 @@ if (!function_exists('perfilLabel')) {
     }
 }
 
+if (!function_exists('atendimentoResultadoLabel')) {
+    function atendimentoResultadoLabel(string $resultado, bool $encerrado = false): string
+    {
+        if ($resultado === 'follow_up') {
+            return $encerrado ? 'Follow-up concluído' : 'Follow-up pendente';
+        }
+
+        return match ($resultado) {
+            'concluido' => 'Concluído',
+            'nao_atendeu' => 'Não atendeu',
+            'cancelado' => 'Cancelado',
+            default => $resultado,
+        };
+    }
+}
+
+if (!function_exists('atendimentoResultadoBadge')) {
+    function atendimentoResultadoBadge(string $resultado, bool $encerrado = false): string
+    {
+        if ($resultado === 'follow_up') {
+            return $encerrado ? 'success' : 'warning';
+        }
+
+        return $resultado === 'concluido' ? 'success' : 'muted';
+    }
+}
+
+if (!function_exists('whatsappUrl')) {
+    function whatsappUrl(?string $telefone, string $mensagem = ''): ?string
+    {
+        $numero = preg_replace('/\D+/', '', (string) $telefone);
+        if ($numero === '') {
+            return null;
+        }
+
+        // Telefones brasileiros normalmente são cadastrados sem o DDI.
+        if (in_array(strlen($numero), [10, 11], true)) {
+            $numero = '55' . $numero;
+        }
+
+        $url = 'https://wa.me/' . $numero;
+        return $mensagem !== '' ? $url . '?text=' . rawurlencode($mensagem) : $url;
+    }
+}
+
 if (!function_exists('scoreClassificacao')) {
     function scoreClassificacao(float $score): string
     {

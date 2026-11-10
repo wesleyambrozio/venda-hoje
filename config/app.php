@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'name' => env('APP_NAME', 'Venda Hoje CRM'),
     'env' => env('APP_ENV', 'local'),
-    'debug' => env('APP_DEBUG', true),
+    'debug' => filter_var(env('APP_DEBUG', false), FILTER_VALIDATE_BOOLEAN),
     'url' => rtrim(env('APP_URL', 'http://localhost'), '/'),
     'key' => env('APP_KEY', ''),
     'timezone' => 'America/Sao_Paulo',

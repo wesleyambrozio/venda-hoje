@@ -9,6 +9,8 @@ use App\Core\Controller;
 use App\Models\Usuario;
 use App\Models\Gatilho;
 use App\Models\CriterioDiagnostico;
+use App\Models\FunilEtapaConfig;
+use App\Services\FunilService;
 
 class ConfigController extends Controller
 {
@@ -86,6 +88,37 @@ class ConfigController extends Controller
         ]);
     }
 
+    public function funil(): void
+    {
+        $user = Auth::user();
+        $this->view('pages/config/funil', [
+            'title' => 'Configurar Funil',
+            'etapas' => (new FunilService())->getEtapas((int) $user['empresa_id']),
+        ]);
+    }
+
+    public function saveFunil(): void
+    {
+        $this->validateCsrf();
+        $user = Auth::user();
+        $model = new FunilEtapaConfig();
+        $permitidas = config('app.funil_etapas');
+        $rotulos = $this->input('rotulos', []);
+        $ordens = $this->input('ordens', []);
+
+        foreach ($permitidas as $indice => $chave) {
+            $rotulo = trim((string) ($rotulos[$chave] ?? ''));
+            if ($rotulo === '') {
+                $rotulo = config('app.funil_labels')[$chave] ?? $chave;
+            }
+            $ordem = (int) ($ordens[$chave] ?? ($indice + 1));
+            $model->salvar((int) $user['empresa_id'], $chave, $rotulo, max(1, min(99, $ordem)));
+        }
+
+        flash('success', 'Etapas do funil atualizadas!');
+        $this->redirect(url('/config/funil'));
+    }
+
     public function storeGatilho(): void
     {
         $this->validateCsrf();
@@ -159,5 +192,44 @@ class ConfigController extends Controller
 
         flash('success', 'Critério atualizado!');
         $this->redirect(url('/config/criterios'));
+    }
+
+    public function aparencia(): void
+    {
+        $user = Auth::user();
+        $this->view('pages/config/aparencia', [
+            'title' => 'Aparência',
+            'themeMode' => $user['theme_mode'] ?? 'dark',
+            'colorPalette' => $user['color_palette'] ?? 'rose',
+            'palettes' => \App\Services\ThemeService::PALETTES,
+            'paletteLabels' => \App\Services\ThemeService::paletteLabels(),
+            'paletteColors' => \App\Services\ThemeService::paletteColors(),
+        ]);
+    }
+
+    public function saveTheme(): void
+    {
+        $this->validateCsrf();
+        $user = Auth::user();
+        $mode = (string) $this->input('theme_mode', 'dark');
+        $palette = (string) $this->input('color_palette', 'rose');
+
+        $empresaModel = new \App\Models\Empresa();
+        if (!$empresaModel->updateTheme((int) $user['empresa_id'], $mode, $palette)) {
+            if ($this->wantsJson()) {
+                $this->json(['ok' => false, 'error' => 'Tema inválido'], 422);
+            }
+            flash('error', 'Tema inválido.');
+            $this->redirect(url('/config/aparencia'));
+        }
+
+        Auth::refreshUserTheme($mode, $palette);
+
+        if ($this->wantsJson()) {
+            $this->json(['ok' => true, 'theme_mode' => $mode, 'color_palette' => $palette]);
+        }
+
+        flash('success', 'Aparência atualizada!');
+        $this->redirect(url('/config/aparencia'));
     }
 }

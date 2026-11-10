@@ -27,7 +27,7 @@ $admin = AdminSaasMiddleware::class;
 // Auth
 $router->get('/login', [AuthController::class, 'showLogin'], [$guest]);
 $router->post('/login', [AuthController::class, 'login'], [$guest]);
-$router->get('/logout', [AuthController::class, 'logout'], [$auth]);
+$router->post('/logout', [AuthController::class, 'logout'], [$auth]);
 
 // Dashboard
 $router->get('/', [DashboardController::class, 'index'], [$auth]);
@@ -40,6 +40,7 @@ $router->post('/leads', [LeadController::class, 'store'], [$auth]);
 $router->get('/leads/{id}', [LeadController::class, 'show'], [$auth]);
 $router->get('/leads/{id}/editar', [LeadController::class, 'edit'], [$auth]);
 $router->post('/leads/{id}', [LeadController::class, 'update'], [$auth]);
+$router->post('/leads/{id}/etapa', [LeadController::class, 'updateEtapa'], [$auth]);
 $router->post('/leads/{id}/excluir', [LeadController::class, 'delete'], [$auth, $gestor]);
 
 // Atendimentos
@@ -74,5 +75,9 @@ $router->get('/config/usuarios', [ConfigController::class, 'usuarios'], [$auth, 
 $router->post('/config/usuarios', [ConfigController::class, 'storeUsuario'], [$auth, $gestor]);
 $router->get('/config/gatilhos', [ConfigController::class, 'gatilhos'], [$auth, $gestor]);
 $router->post('/config/gatilhos', [ConfigController::class, 'storeGatilho'], [$auth, $gestor]);
+$router->get('/config/funil', [ConfigController::class, 'funil'], [$auth, $gestor]);
+$router->post('/config/funil', [ConfigController::class, 'saveFunil'], [$auth, $gestor]);
 $router->get('/config/criterios', [ConfigController::class, 'criterios'], [$auth, $gestor]);
 $router->post('/config/criterios/{id}', [ConfigController::class, 'updateCriterio'], [$auth, $gestor]);
+$router->get('/config/aparencia', [ConfigController::class, 'aparencia'], [$auth, $gestor]);
+$router->post('/config/tema', [ConfigController::class, 'saveTheme'], [$auth]);

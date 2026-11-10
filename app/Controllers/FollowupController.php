@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Core\Controller;
+use App\Models\Atendimento;
 use App\Models\Followup;
 use App\Services\FollowupService;
 
@@ -48,10 +49,15 @@ class FollowupController extends Controller
     {
         $this->validateCsrf();
         $user = Auth::user();
-        $followup = $this->followupModel->find($id);
+        $followup = $this->followupModel->findForEmpresa($id, (int) $user['empresa_id']);
 
         if (!$followup) {
             flash('error', 'Follow-up não encontrado.');
+            $this->redirect(url('/followups'));
+        }
+
+        if ($user['perfil'] === 'sdr' && (int) $followup['usuario_id'] !== (int) $user['id']) {
+            flash('error', 'Sem permissão para concluir este follow-up.');
             $this->redirect(url('/followups'));
         }
 
@@ -62,6 +68,16 @@ class FollowupController extends Controller
         }
 
         $this->followupModel->update($id, $data);
+
+        // O atendimento que gerou este follow-up não deve continuar bloqueando
+        // novos contatos após a conclusão do retorno.
+        if (!empty($followup['atendimento_id'])) {
+            $atendimentoModel = new Atendimento();
+            $atendimentoModel->update((int) $followup['atendimento_id'], [
+                'encerrado' => 1,
+            ]);
+        }
+
         flash('success', 'Follow-up concluído!');
         $this->redirect(url('/followups'));
     }

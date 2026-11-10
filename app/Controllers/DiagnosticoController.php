@@ -46,7 +46,11 @@ class DiagnosticoController extends Controller
         $leadModel = new Lead();
         $lead = $leadModel->findWithDetails($leadId, (int) $user['empresa_id']);
 
-        if (!$lead || !Auth::hasPerfil(['closer', 'gestor', 'admin_saas'])) {
+        if (
+            !$lead
+            || !Auth::hasPerfil(['closer', 'gestor', 'admin_saas'])
+            || !$leadModel->canAccess($lead, (int) $user['id'], $user['perfil'])
+        ) {
             flash('error', 'Sem permissão.');
             $this->redirect(url('/leads'));
         }
@@ -92,8 +96,8 @@ class DiagnosticoController extends Controller
         $leadModel = new Lead();
         $lead = $leadModel->findWithDetails((int) $diagnostico['lead_id'], (int) $user['empresa_id']);
 
-        if (!$lead) {
-            flash('error', 'Lead não encontrado.');
+        if (!$lead || !$leadModel->canAccess($lead, (int) $user['id'], $user['perfil'])) {
+            flash('error', 'Lead não encontrado ou sem permissão.');
             $this->redirect(url('/leads'));
         }
 

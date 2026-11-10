@@ -99,7 +99,10 @@ class Atendimento extends Model
     public function hasFollowUpAberto(int $leadId): bool
     {
         $result = $this->queryOne(
-            "SELECT COUNT(*) AS total FROM atendimentos WHERE lead_id = ? AND resultado = 'follow_up' AND encerrado = 0",
+            "SELECT COUNT(*) AS total
+             FROM followups f
+             JOIN atendimentos a ON a.id = f.atendimento_id
+             WHERE a.lead_id = ? AND f.status = 'pendente'",
             [$leadId]
         );
         return ((int) ($result['total'] ?? 0)) > 0;

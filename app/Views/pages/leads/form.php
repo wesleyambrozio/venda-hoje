@@ -1,5 +1,10 @@
+<?php
+$abordagemOpcoes = $abordagemOpcoes ?? \App\Services\ThemeService::abordagemOpcoes();
+$selectedTipo = $lead['abordagem_tipo'] ?? old('abordagem_tipo') ?: 'descoberta';
+$selectedTexto = $lead['abordagem_texto'] ?? ($abordagemOpcoes[$selectedTipo]['texto'] ?? '');
+?>
 <div class="card">
-    <form method="POST" action="<?= $lead ? url('/leads/' . $lead['id']) : url('/leads') ?>">
+    <form method="POST" action="<?= $lead ? url('/leads/' . $lead['id']) : url('/leads') ?>" id="lead-form">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
 
         <div class="form-row">
@@ -28,7 +33,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Valor Estimado (R$)</label>
-                <input type="number" name="valor_estimado" class="form-control" step="0.01" value="<?= e($lead['valor_estimado'] ?? '') ?>">
+                <input type="number" name="valor_estimado" class="form-control" step="0.01" value="<?= e((string)($lead['valor_estimado'] ?? '')) ?>">
             </div>
         </div>
 
@@ -58,8 +63,8 @@
             <div class="form-group">
                 <label class="form-label">Etapa do Funil</label>
                 <select name="etapa_funil" class="form-control">
-                    <?php foreach (config('app.funil_etapas') as $etapa): ?>
-                        <option value="<?= $etapa ?>" <?= ($lead['etapa_funil'] ?? '') === $etapa ? 'selected' : '' ?>><?= funilLabel($etapa) ?></option>
+                    <?php foreach (($etapasFunil ?? []) as $etapa): ?>
+                        <option value="<?= e($etapa['chave']) ?>" <?= ($lead['etapa_funil'] ?? '') === $etapa['chave'] ? 'selected' : '' ?>><?= e($etapa['rotulo']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -69,6 +74,34 @@
         <div class="form-group">
             <label class="form-label">Observações</label>
             <textarea name="observacoes" class="form-control"><?= e($lead['observacoes'] ?? '') ?></textarea>
+        </div>
+
+        <div class="card abordagem-box" id="abordagem-box"
+             data-opcoes='<?= e(json_encode($abordagemOpcoes, JSON_UNESCAPED_UNICODE)) ?>'>
+            <div class="card-header">
+                <span class="card-title">Mensagem de abordagem</span>
+            </div>
+            <p class="text-muted mb-2">Selecione qual opção de mensagem foi utilizada. Você pode alternar entre as 3 opções.</p>
+
+            <input type="hidden" name="abordagem_tipo" id="abordagem_tipo" value="<?= e($selectedTipo) ?>">
+
+            <div class="abordagem-tabs" role="tablist">
+                <?php foreach ($abordagemOpcoes as $key => $opcao): ?>
+                    <button type="button"
+                            class="abordagem-tab <?= $selectedTipo === $key ? 'is-active' : '' ?>"
+                            data-tipo="<?= e($key) ?>"
+                            role="tab"
+                            aria-selected="<?= $selectedTipo === $key ? 'true' : 'false' ?>">
+                        <?= e($opcao['label']) ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="form-group mt-2">
+                <label class="form-label" for="abordagem_texto">Texto da mensagem</label>
+                <textarea name="abordagem_texto" id="abordagem_texto" class="form-control" rows="4"><?= e($selectedTexto) ?></textarea>
+            </div>
+            <p class="text-muted" style="font-size:.85rem;">Ao alternar a opção, o texto padrão é carregado. Você pode editar antes de salvar.</p>
         </div>
 
         <div class="flex gap-1">

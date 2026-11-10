@@ -158,7 +158,7 @@ class AtendimentoController extends Controller
             $this->redirect(url('/followups'));
         }
 
-        $this->atendimentoModel->update($id, ['encerrado' => 1, 'resultado' => 'concluido']);
+        $this->atendimentoModel->update($id, ['encerrado' => 1]);
 
         $followups = $this->followupModel->getPendentesByAtendimento($id);
         foreach ($followups as $f) {

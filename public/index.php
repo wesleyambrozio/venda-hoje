@@ -14,8 +14,21 @@ if (file_exists(BASE_PATH . '/.env')) {
 date_default_timezone_set(config('app.timezone'));
 
 $sessionConfig = require BASE_PATH . '/config/auth.php';
+$sessionLifetime = (int) ($sessionConfig['session_lifetime'] ?? 7200);
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['SERVER_PORT'] ?? null) == 443)
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
 session_name($sessionConfig['session_name']);
 session_save_path(BASE_PATH . '/storage/sessions');
+session_set_cookie_params([
+    'lifetime' => $sessionLifetime,
+    'path' => '/',
+    'secure' => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+ini_set('session.gc_maxlifetime', (string) $sessionLifetime);
 session_start();
 
 $router = new App\Core\Router();

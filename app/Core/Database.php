@@ -30,7 +30,12 @@ class Database
                     PDO::ATTR_EMULATE_PREPARES => false,
                 ]);
             } catch (PDOException $e) {
-                throw new PDOException('Erro de conexão com o banco: ' . $e->getMessage());
+                $debug = (bool) (($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? false) === true
+                    || ($_ENV['APP_DEBUG'] ?? '') === 'true');
+                $message = $debug
+                    ? 'Erro de conexão com o banco: ' . $e->getMessage()
+                    : 'Erro de conexão com o banco de dados.';
+                throw new PDOException($message, (int) $e->getCode());
             }
         }
 

@@ -17,10 +17,17 @@ class AuthController extends Controller
     public function login(): void
     {
         $this->validateCsrf();
+
+        if (Auth::isLoginLocked()) {
+            $mins = (int) ceil(Auth::loginLockRemaining() / 60);
+            flash('error', "Muitas tentativas. Aguarde {$mins} minuto(s) e tente novamente.");
+            $this->redirect(url('/login'));
+        }
+
         $email = trim((string) $this->input('email'));
         $password = (string) $this->input('password');
 
-        if (empty($email) || empty($password)) {
+        if ($email === '' || $password === '') {
             flash('error', 'Preencha email e senha.');
             setOld(['email' => $email]);
             $this->redirect(url('/login'));
@@ -39,6 +46,7 @@ class AuthController extends Controller
 
     public function logout(): void
     {
+        $this->validateCsrf();
         Auth::logout();
         flash('success', 'Logout realizado com sucesso.');
         $this->redirect(url('/login'));
